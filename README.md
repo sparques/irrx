@@ -13,3 +13,5 @@ decodes the IR signals, making a wider variety of encoding schemes easier to sup
 Here are what IR schemes are supported out of the box, PRs adding support for other schemes are welcome.
 
   - HEXBUG 6-button remote controls
+    - [In action here](https://www.youtube.com/embed/DqpgLUY_Q5o)
+
