@@ -15,3 +15,12 @@ Here are what IR schemes are supported out of the box, PRs adding support for ot
   - HEXBUG 6-button remote controls
     - [In action here](https://www.youtube.com/embed/DqpgLUY_Q5o)
   - PPM-over-IR (this isn't a thing, but it could be)
+
+
+## Not just IR
+
+Because of how the demodulating IR receivers work, you could theoretically hook up, say, a
+PPM radio control receiver directly to an MCU and use this package plus the PPM StateMachine
+to decode the PPM signals.
+
+Basically anything that can be decoded as timed on-off pairs will work here.

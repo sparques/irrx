@@ -56,7 +56,7 @@ func PPM() *ppm {
 }
 
 func (p *ppm) HandleOnOff(on, off time.Duration) {
-	if on > ppmMinumumTimeBetweenFrames {
+	if on > ppmMinimumTimeBetweenFrames {
 		p.last = time.Now()
 		p.currentCh = 0
 	}
