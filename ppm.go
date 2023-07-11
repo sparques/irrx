@@ -61,7 +61,7 @@ func NewPPM() *PPM {
 	return def
 }
 
-func (p *ppm) HandleOnOff(on, off time.Duration) {
+func (p *PPM) HandleOnOff(on, off time.Duration) {
 	if on > ppmMinimumTimeBetweenFrames {
 		p.last = time.Now()
 		p.currentCh = 0
@@ -76,7 +76,7 @@ func (p *ppm) HandleOnOff(on, off time.Duration) {
 	p.currentCh++
 }
 
-func (p *ppm) SetSafeChannels(sc [16]time.Duration) {
+func (p *PPM) SetSafeChannels(sc [16]time.Duration) {
 	p.safeChannels = sc
 }
 
@@ -85,7 +85,7 @@ func (p *ppm) SetSafeChannels(sc [16]time.Duration) {
 // to the caller.
 // If ppm.Timeout has been exceeded, the safe value for the channel is
 // returned.
-func (p *ppm) Channel(ch int) time.Duration {
+func (p *PPM) Channel(ch int) time.Duration {
 	if time.Since(p.last) > p.Timeout {
 		return p.safeChannels[ch]
 	}
@@ -94,7 +94,7 @@ func (p *ppm) Channel(ch int) time.Duration {
 
 // Channels returns all the channels.
 // If ppm.Timeout has been exceeded, the safe values are returned
-func (p *ppm) Channels() [16]time.Duration {
+func (p *PPM) Channels() [16]time.Duration {
 	if time.Since(p.last) > p.Timeout {
 		return p.safeChannels
 	}
@@ -106,7 +106,7 @@ func DurationToFloat32(d time.Duration) float32 {
 }
 
 type PPMCalibrator struct {
-	PPM *ppm
+	PPM *PPM
 	max [16]time.Duration
 	min [16]time.Duration
 }
