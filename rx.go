@@ -31,11 +31,11 @@ func NewRxDevice(pin Pin, rsm RxStateMachine) *RxDevice {
 
 func (d *RxDevice) interruptHandler(interruptPin Pin) {
 	ptime := time.Now()
-	if interruptPin.Get() {
+	if d.pin.Get() {
 		//pin high
 		d.stateMachine.HandleOnOff(d.lastHigh, time.Since(d.lastPulse))
 	} else {
-		d.lastHigh = time.Since(ptime)
+		d.lastHigh = time.Since(d.lastPulse)
 	}
 	d.lastPulse = ptime
 }

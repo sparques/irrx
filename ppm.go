@@ -30,7 +30,9 @@ If using to drive a 180 degree servo, that means each graduation is 4.7 degrees 
 
 package irrx
 
-import "time"
+import (
+	"time"
+)
 
 const ppmMinimumTimeBetweenFrames = 6 * time.Millisecond
 
@@ -45,9 +47,6 @@ type PPM struct {
 	// safeChannels are what we set channels to if we exceed Timout
 	safeChannels [16]time.Duration
 
-	// Invert inverts on/off times. IR idles high, setting Invert to true swaps on time and off time
-	Invert bool
-
 	// if we haven't received a frame in Timeout amount of time, we return
 	// values from safeChannels
 	Timeout time.Duration
@@ -58,7 +57,7 @@ type PPM struct {
 
 func NewPPM() *PPM {
 	def := &PPM{
-		Timeout:      10 * ppmMinimumTimeBetweenFrames,
+		Timeout:      100 * ppmMinimumTimeBetweenFrames,
 		safeChannels: PPMSafeChannelsMid,
 	}
 	return def
@@ -68,6 +67,7 @@ func (p *PPM) HandleOnOff(on, off time.Duration) {
 	if on > ppmMinimumTimeBetweenFrames {
 		p.last = time.Now()
 		p.currentCh = 0
+		return
 	}
 
 	// prevent out-of-spec signals from panicking us.
@@ -75,7 +75,7 @@ func (p *PPM) HandleOnOff(on, off time.Duration) {
 		return
 	}
 
-	p.channels[p.currentCh] = off
+	p.channels[p.currentCh] = on + off
 	p.currentCh++
 }
 
