@@ -45,6 +45,9 @@ type PPM struct {
 	// safeChannels are what we set channels to if we exceed Timout
 	safeChannels [16]time.Duration
 
+	// Invert inverts on/off times. IR idles high, setting Invert to true swaps on time and off time
+	Invert bool
+
 	// if we haven't received a frame in Timeout amount of time, we return
 	// values from safeChannels
 	Timeout time.Duration
@@ -105,6 +108,7 @@ func DurationToFloat32(d time.Duration) float32 {
 	return float32(2*d-3*time.Millisecond) / float32(time.Millisecond)
 }
 
+/*
 type PPMCalibrator struct {
 	PPM *PPM
 	max [16]time.Duration
@@ -142,3 +146,4 @@ func (pc *PPMCalibrator) HandleOnOff(on, off time.Duration) {
 func (pc *PPMCalibrator) Channel(ch int) float32 {
 	return float32(2*pc.PPM.Channel(ch)-(pc.max[ch]+pc.min[ch])) / float32(pc.max[ch]-pc.min[ch])
 }
+*/
