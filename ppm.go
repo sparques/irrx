@@ -34,7 +34,12 @@ import "time"
 
 const ppmMinimumTimeBetweenFrames = 6 * time.Millisecond
 
-type ppm struct {
+var (
+	PPMSafeChannelsMid    = [16]time.Duration{1500 * time.Microsecond, 1500 * time.Microsecond, 1500 * time.Microsecond, 1500 * time.Microsecond, 1500 * time.Microsecond, 1500 * time.Microsecond, 1500 * time.Microsecond, 1500 * time.Microsecond, 1500 * time.Microsecond, 1500 * time.Microsecond, 1500 * time.Microsecond, 1500 * time.Microsecond, 1500 * time.Microsecond, 1500 * time.Microsecond, 1500 * time.Microsecond, 1500 * time.Microsecond}
+	PPMSafeChannelsBottom = [16]time.Duration{1000 * time.Microsecond, 1000 * time.Microsecond, 1000 * time.Microsecond, 1000 * time.Microsecond, 1000 * time.Microsecond, 1000 * time.Microsecond, 1000 * time.Microsecond, 1000 * time.Microsecond, 1000 * time.Microsecond, 1000 * time.Microsecond, 1000 * time.Microsecond, 1000 * time.Microsecond, 1000 * time.Microsecond, 1000 * time.Microsecond, 1000 * time.Microsecond, 1000 * time.Microsecond}
+)
+
+type PPM struct {
 	// where we store the values we've decoded
 	channels [16]time.Duration
 	// safeChannels are what we set channels to if we exceed Timout
@@ -48,9 +53,10 @@ type ppm struct {
 	last      time.Time
 }
 
-func PPM() *ppm {
-	def := &ppm{
-		Timeout: 10 * ppmMinimumTimeBetweenFrames,
+func NewPPM() *PPM {
+	def := &PPM{
+		Timeout:      10 * ppmMinimumTimeBetweenFrames,
+		safeChannels: PPMSafeChannelsMid,
 	}
 	return def
 }
@@ -93,4 +99,46 @@ func (p *ppm) Channels() [16]time.Duration {
 		return p.safeChannels
 	}
 	return p.channels
+}
+
+func DurationToFloat32(d time.Duration) float32 {
+	return float32(2*d-3*time.Millisecond) / float32(time.Millisecond)
+}
+
+type PPMCalibrator struct {
+	PPM *ppm
+	max [16]time.Duration
+	min [16]time.Duration
+}
+
+func NewPPMCalibrator() *PPMCalibrator {
+	pc := &PPMCalibrator{PPM: PPM()}
+	for ch := range pc.max {
+		pc.max[ch] = time.Millisecond
+		pc.min[ch] = 2 * time.Millisecond
+	}
+	return pc
+}
+
+func (pc *PPMCalibrator) Update(chs [16]time.Duration) {
+	for ch := range chs {
+		if pc.max[ch] < chs[ch] {
+			pc.max[ch] = chs[ch]
+			continue
+		}
+		if pc.min[ch] > chs[ch] {
+			pc.min[ch] = chs[ch]
+		}
+	}
+}
+
+func (pc *PPMCalibrator) HandleOnOff(on, off time.Duration) {
+	pc.PPM.HandleOnOff(on, off)
+	if pc.PPM.currentCh == 0 {
+		pc.Update(pc.PPM.channels)
+	}
+}
+
+func (pc *PPMCalibrator) Channel(ch int) float32 {
+	return float32(2*pc.PPM.Channel(ch)-(pc.max[ch]+pc.min[ch])) / float32(pc.max[ch]-pc.min[ch])
 }
