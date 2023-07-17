@@ -29,6 +29,17 @@ func NewRxDevice(pin Pin, rsm RxStateMachine) *RxDevice {
 	}
 }
 
+func (d *RxDevice) invertedInterruptHandler(interruptPin Pin) {
+	ptime := time.Now()
+	if d.pin.Get() {
+		//pin high
+		d.lastHigh = time.Since(d.lastPulse)
+	} else {
+		d.stateMachine.HandleOnOff(time.Since(d.lastPulse), d.lastHigh)
+	}
+	d.lastPulse = ptime
+}
+
 func (d *RxDevice) interruptHandler(interruptPin Pin) {
 	ptime := time.Now()
 	if d.pin.Get() {
@@ -40,8 +51,16 @@ func (d *RxDevice) interruptHandler(interruptPin Pin) {
 	d.lastPulse = ptime
 }
 
+// Start sets the interrupt handler and thus starts processing signals.
+// Use Start if your RxStateMachine uses on-off pairs, e.g. Hexbug or PPM.
 func (d *RxDevice) Start() {
 	d.pin.SetInterrupt(PinFalling|PinRising, d.interruptHandler)
+}
+
+// StartInverted sets the interrupt handler and thus starts processing signals.
+// Use Start if your RxStateMachine uses off-on pairs, e.g. NEC.
+func (d *RxDevice) StartInverted() {
+	d.pin.SetInterrupt(PinFalling|PinRising, d.invertedInterruptHandler)
 }
 
 func (d *RxDevice) Stop() {
